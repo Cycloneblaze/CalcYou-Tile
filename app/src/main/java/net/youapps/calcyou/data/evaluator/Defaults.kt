@@ -10,17 +10,21 @@ import kotlin.math.atan
 import kotlin.math.atan2
 import kotlin.math.atanh
 import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.cosh
 import kotlin.math.exp
 import kotlin.math.floor
+import kotlin.math.hypot
 import kotlin.math.ln
 import kotlin.math.log
 import kotlin.math.log10
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.round
+import kotlin.math.sin
 import kotlin.math.sinh
 import kotlin.math.sqrt
+import kotlin.math.tan
 import kotlin.math.tanh
 import kotlin.math.truncate
 
@@ -184,6 +188,79 @@ object Defaults {
             "ATANH" to { args, mode ->
                 atanh(trigonometricModeToRadian(args.first(), mode))
             },
+
+            // Additional trigonometric functions
+            "COT" to { args, mode ->
+                1.0 / tan(trigonometricModeToRadian(args.first(), mode))
+            },
+            "SEC" to { args, mode ->
+                1.0 / cos(trigonometricModeToRadian(args.first(), mode))
+            },
+            "CSC" to { args, mode ->
+                1.0 / sin(trigonometricModeToRadian(args.first(), mode))
+            },
+
+            // Additional mathematical functions
+            "CBRT" to { args, _ ->
+                args.first().pow(1.0 / 3.0)
+            },
+            "HYPOT" to fn@{ args, _ ->
+                if (args.size == 2) {
+                    return@fn hypot(args[0], args[1])
+                }
+                throw InvalidParameterException("hypot requires two arguments: x, y")
+            },
+            "GCD" to fn@{ args, _ ->
+                if (args.size == 2) {
+                    val a = args[0].toLong()
+                    val b = args[1].toLong()
+                    return@fn gcd(a, b).toDouble()
+                }
+                throw InvalidParameterException("gcd requires two arguments")
+            },
+            "LCM" to fn@{ args, _ ->
+                if (args.size == 2) {
+                    val a = args[0].toLong()
+                    val b = args[1].toLong()
+                    return@fn lcm(a, b).toDouble()
+                }
+                throw InvalidParameterException("lcm requires two arguments")
+            },
+            "CLAMP" to fn@{ args, _ ->
+                if (args.size == 3) {
+                    val value = args[0]
+                    val min = args[1]
+                    val max = args[2]
+                    return@fn when {
+                        value < min -> min
+                        value > max -> max
+                        else -> value
+                    }
+                }
+                throw InvalidParameterException("clamp requires three arguments: value, min, max")
+            },
+            "RADIANS" to { args, _ ->
+                args.first() * Math.PI / 180.0
+            },
+            "DEGREES" to { args, _ ->
+                args.first() * 180.0 / Math.PI
+            },
         )
+    }
+
+    // Helper functions for GCD and LCM
+    private fun gcd(a: Long, b: Long): Long {
+        var x = abs(a)
+        var y = abs(b)
+        while (y != 0L) {
+            val temp = y
+            y = x % y
+            x = temp
+        }
+        return x
+    }
+
+    private fun lcm(a: Long, b: Long): Long {
+        return if (a == 0L || b == 0L) 0L else abs(a * b) / gcd(a, b)
     }
 }
