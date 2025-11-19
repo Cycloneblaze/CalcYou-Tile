@@ -3,14 +3,20 @@ package net.youapps.calcyou.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -32,6 +38,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import net.youapps.calcyou.R
 import net.youapps.calcyou.viewmodels.GraphViewModel
@@ -80,13 +87,14 @@ private fun DialogContent(
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp))
     ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
                 text = stringResource(R.string.add_new_function),
                 style = MaterialTheme.typography.titleLarge
             )
             var text by remember { mutableStateOf(initialExpression) }
             OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
                 value = text,
                 onValueChange = {
                     text = it
@@ -118,10 +126,59 @@ private fun DialogContent(
                     fontWeight = FontWeight.Medium,
                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                     fontStyle = FontStyle.Italic
-                )
+                ),
+                supportingText = {
+                    Text(
+                        text = "Supports nested functions like sin(cos(x))",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             )
             AnimatedVisibility(isError) {
                 Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+            }
+
+            // Function template chips
+            Text(
+                text = "Quick Templates:",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val templates = listOf(
+                    "sin(x)" to "sin(x)",
+                    "x^2" to "x^2",
+                    "sin(cos(x))" to "sin(cos(x))",
+                    "sqrt(x^2+1)" to "sqrt(x^2+1)",
+                    "e^(-x^2)" to "exp(-x^2)",
+                    "ln(abs(x))" to "ln(abs(x))",
+                    "tan(x/2)" to "tan(x/2)"
+                )
+
+                templates.forEach { (label, template) ->
+                    AssistChip(
+                        onClick = {
+                            text = template
+                            checkExpression(template)
+                        },
+                        label = {
+                            Text(
+                                text = label,
+                                style = TextStyle(
+                                    fontFamily = FontFamily.Serif,
+                                    fontStyle = FontStyle.Italic,
+                                    fontSize = 12.sp
+                                )
+                            )
+                        }
+                    )
+                }
             }
             Row(Modifier.align(Alignment.End)) {
                 TextButton(onClick = onCancel) {

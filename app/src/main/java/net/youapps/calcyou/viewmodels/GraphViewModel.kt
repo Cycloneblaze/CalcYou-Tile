@@ -106,6 +106,11 @@ class GraphViewModel(private val application: Application) : AndroidViewModel(ap
         }
     }
 
+    fun toggleFunctionVisibility(index: Int) {
+        val function = functions[index]
+        functions[index] = function.copy(isVisible = !function.isVisible)
+    }
+
     private fun getFuncName(index: Int): String {
         return Defaults.defaultFuncNameChars[
             index % Defaults.defaultFuncNameChars.size
