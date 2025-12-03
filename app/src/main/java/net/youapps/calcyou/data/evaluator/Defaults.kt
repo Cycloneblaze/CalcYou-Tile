@@ -214,7 +214,7 @@ object Defaults {
                 if (args.size == 2) {
                     val a = args[0].toLong()
                     val b = args[1].toLong()
-                    return@fn gcd(a, b).toDouble()
+                    return@fn MathUtil.gcd(a, b).toDouble()
                 }
                 throw InvalidParameterException("gcd requires two arguments")
             },
@@ -222,7 +222,7 @@ object Defaults {
                 if (args.size == 2) {
                     val a = args[0].toLong()
                     val b = args[1].toLong()
-                    return@fn lcm(a, b).toDouble()
+                    return@fn MathUtil.lcm(a, b).toDouble()
                 }
                 throw InvalidParameterException("lcm requires two arguments")
             },
@@ -246,21 +246,5 @@ object Defaults {
                 args.first() * 180.0 / Math.PI
             },
         )
-    }
-
-    // Helper functions for GCD and LCM
-    private fun gcd(a: Long, b: Long): Long {
-        var x = abs(a)
-        var y = abs(b)
-        while (y != 0L) {
-            val temp = y
-            y = x % y
-            x = temp
-        }
-        return x
-    }
-
-    private fun lcm(a: Long, b: Long): Long {
-        return if (a == 0L || b == 0L) 0L else abs(a * b) / gcd(a, b)
     }
 }

@@ -1,23 +1,22 @@
 package net.youapps.calcyou.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Help
 import androidx.compose.material3.AssistChip
@@ -108,7 +107,7 @@ private fun DialogContent(
                 IconButton(onClick = { showCheatSheet = true }) {
                     Icon(
                         imageVector = Icons.Rounded.Help,
-                        contentDescription = "Syntax help",
+                        contentDescription = stringResource(R.string.syntax_help),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -147,14 +146,7 @@ private fun DialogContent(
                     fontWeight = FontWeight.Medium,
                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                     fontStyle = FontStyle.Italic
-                ),
-                supportingText = {
-                    Text(
-                        text = "Supports nested functions like sin(cos(x))",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                )
             )
             AnimatedVisibility(isError) {
                 Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
@@ -162,17 +154,12 @@ private fun DialogContent(
 
             // Function template chips
             Text(
-                text = "Quick Templates:",
+                text = stringResource(R.string.quick_templates),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val templates = listOf(
+            val templates = remember {
+                listOf(
                     "sin(x)" to "sin(x)",
                     "x^2" to "x^2",
                     "sin(cos(x))" to "sin(cos(x))",
@@ -184,8 +171,14 @@ private fun DialogContent(
                     "cot(x)" to "cot(x)",
                     "1/x" to "1/x"
                 )
+            }
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(templates, key = { it.first }) { (template, label) ->
 
-                templates.forEach { (label, template) ->
                     AssistChip(
                         onClick = {
                             text = template
@@ -217,7 +210,8 @@ private fun DialogContent(
         }
     }
     if (showColorPicker) {
-        ColorSelectionDialog(initialColor = remember { color },
+        ColorSelectionDialog(
+            initialColor = remember { color },
             onDismiss = { showColorPicker = false }) {
             color = it
         }
@@ -228,6 +222,7 @@ private fun DialogContent(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SyntaxCheatSheetDialog(onDismiss: () -> Unit) {
     Dialog(onDismiss) {
@@ -237,115 +232,146 @@ fun SyntaxCheatSheetDialog(onDismiss: () -> Unit) {
                 .background(MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp))
                 .heightIn(max = 600.dp)
         ) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = "Function Syntax Reference",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                CheatSheetSection(
-                    title = "Operators",
-                    items = listOf(
-                        "+" to "Addition",
-                        "-" to "Subtraction",
-                        "*" to "Multiplication",
-                        "/" to "Division",
-                        "^" to "Exponentiation (x^2)",
-                        "%" to "Modulo (remainder)"
+                item {
+                    Text(
+                        text = stringResource(R.string.function_syntax_reference),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                )
 
-                CheatSheetSection(
-                    title = "Basic Functions",
-                    items = listOf(
-                        "abs(x)" to "Absolute value",
-                        "sqrt(x)" to "Square root",
-                        "cbrt(x)" to "Cube root",
-                        "exp(x)" to "Exponential (e^x)",
-                        "ln(x)" to "Natural logarithm",
-                        "log10(x)" to "Base-10 logarithm",
-                        "log2(x)" to "Base-2 logarithm",
-                        "log(x; base)" to "Logarithm with custom base",
-                        "pow(base; exp)" to "Power function"
-                    )
-                )
-
-                CheatSheetSection(
-                    title = "Trigonometric Functions",
-                    items = listOf(
-                        "sin(x), cos(x), tan(x)" to "Basic trig",
-                        "asin(x), acos(x), atan(x)" to "Inverse trig",
-                        "sinh(x), cosh(x), tanh(x)" to "Hyperbolic",
-                        "asinh(x), acosh(x), atanh(x)" to "Inverse hyperbolic",
-                        "cot(x), sec(x), csc(x)" to "Cotangent, secant, cosecant"
-                    )
-                )
-
-                CheatSheetSection(
-                    title = "Rounding Functions",
-                    items = listOf(
-                        "ceil(x)" to "Round up",
-                        "floor(x)" to "Round down",
-                        "round(x)" to "Round to nearest",
-                        "truncate(x)" to "Remove decimals"
-                    )
-                )
-
-                CheatSheetSection(
-                    title = "Advanced Functions",
-                    items = listOf(
-                        "fac(n)" to "Factorial (n!)",
-                        "min(a; b; ...)" to "Minimum value",
-                        "max(a; b; ...)" to "Maximum value",
-                        "sign(x)" to "Sign (-1, 0, or 1)",
-                        "hypot(x; y)" to "Hypotenuse sqrt(x²+y²)",
-                        "gcd(a; b)" to "Greatest common divisor",
-                        "lcm(a; b)" to "Least common multiple",
-                        "clamp(val; min; max)" to "Clamp value",
-                        "radians(deg)" to "Degrees to radians",
-                        "degrees(rad)" to "Radians to degrees"
-                    )
-                )
-
-                CheatSheetSection(
-                    title = "Constants",
-                    items = listOf(
-                        "pi or π" to "Pi (3.14159...)",
-                        "e" to "Euler's number (2.71828...)"
-                    )
-                )
-
-                CheatSheetSection(
-                    title = "Nested Functions",
-                    items = listOf(
-                        "sin(cos(x))" to "Functions inside functions",
-                        "sqrt(x^2 + 1)" to "Combine operations",
-                        "exp(-x^2)" to "Gaussian-like curves",
-                        "ln(abs(x))" to "Avoid domain errors"
-                    )
-                )
-
-                Divider()
-
-                Text(
-                    text = "Note: Use semicolons (;) to separate multiple arguments",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontStyle = FontStyle.Italic
-                )
-
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text(text = "Close")
                 }
+                item {
+                    CheatSheetSection(
+                        title = stringResource(R.string.operators),
+                        items = listOf(
+                            "+" to stringResource(R.string.addition),
+                            "-" to stringResource(R.string.subtraction),
+                            "*" to stringResource(R.string.multiplication),
+                            "/" to stringResource(R.string.division),
+                            "^" to stringResource(R.string.exponentiation_x_2),
+                            "%" to stringResource(R.string.modulo_remainder)
+                        )
+                    )
+                }
+                item {
+                    CheatSheetSection(
+                        title = stringResource(R.string.basic_functions),
+                        items = listOf(
+                            "abs(x)" to stringResource(R.string.absolute_value),
+                            "sqrt(x)" to stringResource(R.string.square_root),
+                            "cbrt(x)" to stringResource(R.string.cube_root),
+                            "exp(x)" to stringResource(R.string.exponential_e_x),
+                            "ln(x)" to stringResource(R.string.natural_logarithm),
+                            "log10(x)" to stringResource(R.string.base_10_logarithm),
+                            "log2(x)" to stringResource(R.string.base_2_logarithm),
+                            "log(x; base)" to stringResource(R.string.logarithm_with_custom_base),
+                            "pow(base; exp)" to stringResource(R.string.power_function)
+                        )
+                    )
+                }
+
+                item {
+                    CheatSheetSection(
+                        title = stringResource(R.string.trigonometric_functions),
+                        items = listOf(
+                            "sin(x), cos(x), tan(x)" to stringResource(R.string.basic_trig),
+                            "asin(x), acos(x), atan(x)" to stringResource(R.string.inverse_trig),
+                            "sinh(x), cosh(x), tanh(x)" to stringResource(R.string.hyperbolic),
+                            "asinh(x), acosh(x), atanh(x)" to stringResource(R.string.inverse_hyperbolic),
+                            "cot(x), sec(x), csc(x)" to stringResource(R.string.cotangent_secant_cosecant)
+                        )
+                    )
+                }
+
+                item {
+                    CheatSheetSection(
+                        title = stringResource(R.string.rounding_functions),
+                        items = listOf(
+                            "ceil(x)" to stringResource(R.string.round_up),
+                            "floor(x)" to stringResource(R.string.round_down),
+                            "round(x)" to stringResource(R.string.round_to_nearest),
+                            "truncate(x)" to stringResource(R.string.remove_decimals)
+                        )
+                    )
+                }
+                item {
+                    CheatSheetSection(
+                        title = stringResource(R.string.advanced_functions),
+                        items = listOf(
+                            "fac(n)" to stringResource(R.string.factorial_n),
+                            "min(a; b; ...)" to stringResource(R.string.minimum_value),
+                            "max(a; b; ...)" to stringResource(R.string.maximum_value),
+                            "sign(x)" to stringResource(R.string.sign_1_0_or_1),
+                            "hypot(x; y)" to stringResource(R.string.hypotenuse_sqrt_x_y),
+                            "gcd(a; b)" to stringResource(R.string.greatest_common_divisor),
+                            "lcm(a; b)" to stringResource(R.string.least_common_multiple),
+                            "clamp(val; min; max)" to stringResource(R.string.clamp_value),
+                            "radians(deg)" to stringResource(R.string.degrees_to_radians),
+                            "degrees(rad)" to stringResource(R.string.radians_to_degrees)
+                        )
+                    )
+                }
+
+                item {
+                    CheatSheetSection(
+                        title = stringResource(R.string.constants),
+                        items = listOf(
+                            "pi or π" to stringResource(R.string.pi_3_14159),
+                            "e" to stringResource(R.string.euler_s_number_2_71828)
+                        )
+                    )
+                }
+
+
+                item {
+                    CheatSheetSection(
+                        title = stringResource(R.string.nested_functions),
+                        items = listOf(
+                            "sin(cos(x))" to stringResource(R.string.functions_inside_functions),
+                            "sqrt(x^2 + 1)" to stringResource(R.string.combine_operations),
+                            "exp(-x^2)" to stringResource(R.string.gaussian_like_curves),
+                            "ln(abs(x))" to stringResource(R.string.avoid_domain_errors)
+                        )
+                    )
+                }
+
+                item {
+                    Divider()
+                }
+
+                item {
+                    Text(
+                        text = stringResource(R.string.note_use_semicolons_to_separate_multiple_arguments),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+
+                item {
+                    Text(
+                        text = stringResource(R.string.supports_nested_functions_like_sin_cos_x),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+
+
+                item {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                    ) {
+                        Text(text = stringResource(R.string.close))
+                    }
+                }
+
             }
         }
     }
@@ -393,7 +419,7 @@ private fun DialogContentPreview() {
         onCancel = {},
         checkExpression = {},
         isError = true,
-        errorMessage = "Invalid token at index 0",
+        errorMessage = stringResource(R.string.invalid_token_at_index_0),
         functionName = "f"
     )
 }
