@@ -24,22 +24,26 @@ fun DrawScope.drawGridLines(window: Window, lineWidth: Float, gridLinesColor: Co
         floor(window.xMax / window.xScale).toInt()
     )
 
+    // Draw vertical grid lines with subtle styling
     for (i in xRange) {
         if (i == 0) continue
         val xDraw =
             Offset(i * window.xScale, 0f).unitToPxCoordinates(window, size.width, size.height).x
-        drawLine(gridLinesColor, Offset(xDraw, 0f), Offset(xDraw, size.height), lineWidth)
+        val alpha = if (i % 5 == 0) 0.3f else 0.15f // Emphasize every 5th line
+        drawLine(gridLinesColor.copy(alpha = alpha), Offset(xDraw, 0f), Offset(xDraw, size.height), lineWidth)
     }
     val yRange = IntRange(
         ceil(window.yMin / window.yScale).toInt(),
         floor(window.yMax / window.yScale).toInt()
     )
 
+    // Draw horizontal grid lines with subtle styling
     for (i in yRange) {
         if (i == 0) continue
         val yDraw =
             Offset(0f, i * window.yScale).unitToPxCoordinates(window, size.width, size.height).y
-        drawLine(gridLinesColor, Offset(0f, yDraw), Offset(size.width, yDraw), lineWidth)
+        val alpha = if (i % 5 == 0) 0.3f else 0.15f // Emphasize every 5th line
+        drawLine(gridLinesColor.copy(alpha = alpha), Offset(0f, yDraw), Offset(size.width, yDraw), lineWidth)
     }
 }
 
@@ -71,20 +75,20 @@ fun DrawScope.drawAxes(
     axesColor: Color
 ) {
 
-    // y-axis
+    // y-axis - draw with slightly thicker line for prominence
     val windowCenterInCanvas = Offset(0f, 0f).unitToPxCoordinates(window, size.width, size.height)
     drawLine(
-        axesColor,
+        axesColor.copy(alpha = 0.8f),
         Offset(windowCenterInCanvas.x, 0f),
         Offset(windowCenterInCanvas.x, size.height),
-        lineWidth
+        lineWidth * 1.5f
     )
-    // x-axis
+    // x-axis - draw with slightly thicker line for prominence
     drawLine(
-        axesColor,
+        axesColor.copy(alpha = 0.8f),
         Offset(0f, windowCenterInCanvas.y),
         Offset(size.width, windowCenterInCanvas.y),
-        lineWidth
+        lineWidth * 1.5f
     )
 
     // Ticks on x-axis
@@ -290,10 +294,14 @@ fun DrawScope.renderCanvas(
     drawGridLines(window, lineWidth, gridLinesColor)
     drawAxes(window, lineWidth, canvasScale, textMeasurer, axesColor)
 
+    // Draw functions with slightly thicker lines for better visibility
+    val graphLineWidth = lineWidth * 1.8f
     vm.functions.forEach {
         // this might fail if we attempt to use a constant that no longer exists
-        runCatching {
-            drawGraph(window, it, vm.constants, lineWidth, vm.mode)
+        if (it.isVisible) {
+            runCatching {
+                drawGraph(window, it, vm.constants, graphLineWidth, vm.mode)
+            }
         }
     }
 }

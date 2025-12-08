@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -80,6 +82,9 @@ fun GraphingScreen(graphViewModel: GraphViewModel = viewModel()) {
                     },
                     onClickRemoveFunction = {
                         graphViewModel.removeFunction(it)
+                    },
+                    onToggleFunctionVisibility = {
+                        graphViewModel.toggleFunctionVisibility(it)
                     },
                     onClickConstant = {
                         graphViewModel.selectedConstantIndex = it
@@ -158,6 +163,7 @@ fun FunctionConstantsList(
     constants: List<Constant>,
     onClickFunction: (Int) -> Unit,
     onClickRemoveFunction: (Int) -> Unit,
+    onToggleFunctionVisibility: (Int) -> Unit,
     onClickConstant: (Int) -> Unit,
     onClickRemoveConstant: (Int) -> Unit
 ) {
@@ -169,9 +175,13 @@ fun FunctionConstantsList(
                 lhsName = "${function.name}(x)",
                 text = function.expression,
                 color = function.color,
+                isVisible = function.isVisible,
                 onClick = { onClickFunction(index) },
                 onClickRemove = {
                     onClickRemoveFunction(index)
+                },
+                onToggleVisibility = {
+                    onToggleFunctionVisibility(index)
                 }
             )
             Divider(Modifier.fillMaxWidth())
@@ -195,7 +205,9 @@ fun FunctionRow(
     text: String,
     color: Color?,
     onClick: () -> Unit,
-    onClickRemove: () -> Unit
+    onClickRemove: () -> Unit,
+    isVisible: Boolean = true,
+    onToggleVisibility: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -223,6 +235,15 @@ fun FunctionRow(
             )
         )
         Spacer(modifier = Modifier.weight(1f))
+        if (onToggleVisibility != null) {
+            IconButton(onClick = { onToggleVisibility() }) {
+                Icon(
+                    imageVector = if (isVisible) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
+                    contentDescription = if (isVisible) "Hide function" else "Show function",
+                    tint = if (isVisible) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                )
+            }
+        }
         IconButton(onClick = { onClickRemove() }) {
             Icon(
                 imageVector = Icons.Rounded.Clear,

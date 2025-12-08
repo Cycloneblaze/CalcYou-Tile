@@ -175,7 +175,11 @@ object MathUtil {
      * @param maxLen   the maximum total length of the resulting string
      * @param rounding the number of final digits to round
      */
-    fun doubleToString(x: Double, maxLen: Int = MAX_DIGITS, rounding: Int = ROUNDING_DIGITS): String {
+    fun doubleToString(
+        x: Double,
+        maxLen: Int = MAX_DIGITS,
+        rounding: Int = ROUNDING_DIGITS
+    ): String {
         return sizeTruncate(doubleToString(x, rounding), maxLen)
     }
 
@@ -215,6 +219,23 @@ object MathUtil {
 
         // Gosper's Approximation, see https://mathworld.wolfram.com/StirlingsApproximation.html
         return (sqrt((2 * x + 1 / 3) * Math.PI) * x.pow(x) * exp((-x)))
+    }
+
+
+    // Helper functions for GCD and LCM
+    fun gcd(a: Long, b: Long): Long {
+        var x = abs(a)
+        var y = abs(b)
+        while (y != 0L) {
+            val temp = y
+            y = x % y
+            x = temp
+        }
+        return x
+    }
+
+    fun lcm(a: Long, b: Long): Long {
+        return if (a == 0L || b == 0L) 0L else abs(a * b) / gcd(a, b)
     }
 
     private const val MAX_DIGITS = 12

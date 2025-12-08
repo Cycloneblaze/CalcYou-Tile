@@ -11,7 +11,8 @@ data class Function(
     val expression: String,
     val color: Color,
     val name: String,
-    val compiled: CompiledExpression
+    val compiled: CompiledExpression,
+    val isVisible: Boolean = true
 ) {
     fun execute(variableX: Float, mode: TrigonometricMode, constants: List<Constant>): Float? {
         val variables = listOf(
